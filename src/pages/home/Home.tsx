@@ -4,6 +4,8 @@ import { RootState } from "@/lib/create-store";
 import { useSelector } from "react-redux";
 import { HomeViewModelType, selectHomeViewModel } from "./home.viewmodel";
 import { ReactNode } from "react";
+import {exhaustiveGuard} from "@/lib/common/utils/exhaustive-guard.ts";
+import {Text} from "@chakra-ui/react";
 
 export const Home = () => {
   const viewModel = useSelector<
@@ -13,22 +15,23 @@ export const Home = () => {
     selectHomeViewModel(rootState, () => new Date().toISOString())
   );
 
-  const timelineNode: ReactNode = () => {
+  const timelineNode: ReactNode = (() => {
     switch (viewModel.timeline.type) {
       case HomeViewModelType.NoTimeline:
         return null;
       case HomeViewModelType.EmptyTimeline:
-        return null;
+        return <Text>{viewModel.timeline.info}</Text>;
       case HomeViewModelType.WithMessages:
-        return null;
+        return <PostList messages={viewModel.timeline.messages}/>;
       default:
         return exhaustiveGuard(viewModel.timeline);
     }
-  };
+  })();
 
   return (
     <>
       <TimelineDivider text="For you" />
+      {timelineNode}
     </>
   );
 };

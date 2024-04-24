@@ -30,7 +30,7 @@ export const selectHomeViewModel = (
           profilePictureUrl: string;
           publishedAt: string;
           text: string;
-        };
+        }[];
       };
 } => {
   const now = getNow();
