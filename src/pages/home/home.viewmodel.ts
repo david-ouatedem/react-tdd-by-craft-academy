@@ -1,69 +1,85 @@
-import { RootState } from "@/lib/create-store";
-import { selectMessages } from "@/lib/timelines/slices/messages.slice";
-import { selectTimeline } from "@/lib/timelines/slices/timelines.slice";
-import { format as timeAgo } from "timeago.js";
+import {RootState} from "@/lib/create-store";
+import {selectMessages} from "@/lib/timelines/slices/messages.slice";
+import {selectIsUserTimelineLoading, selectTimeline} from "@/lib/timelines/slices/timelines.slice";
+import {format as timeAgo} from "timeago.js";
 
 export enum HomeViewModelType {
-  NoTimeline = "NO_TIMELINE",
-  EmptyTimeline = "EMPTY_TIMELINE",
-  WithMessages = "TIMELINE_WITH_MESSAGES",
+    NoTimeline = "NO_TIMELINE",
+    LoadingTimeline = "LOADING_TIMELINE",
+    EmptyTimeline = "EMPTY_TIMELINE",
+    WithMessages = "TIMELINE_WITH_MESSAGES",
 }
 
 export const selectHomeViewModel = (
-  state: RootState,
-  getNow: () => string
+    state: RootState,
+    getNow: () => string
 ): {
-  timeline:
-    | {
+    timeline:
+        | {
         type: HomeViewModelType.NoTimeline;
-      }
-    | {
+    } | {
+        type: HomeViewModelType.LoadingTimeline;
+        info: string;
+    }
+        | {
         type: HomeViewModelType.EmptyTimeline;
         info: string;
-      }
-    | {
+    }
+        | {
         type: HomeViewModelType.WithMessages;
         messages: {
-          id: string;
-          userId: string;
-          username: string;
-          profilePictureUrl: string;
-          publishedAt: string;
-          text: string;
+            id: string;
+            userId: string;
+            username: string;
+            profilePictureUrl: string;
+            publishedAt: string;
+            text: string;
         }[];
-      };
+    };
 } => {
-  const now = getNow();
-  const timeline = selectTimeline("alice-timeline-id", state);
-  if (!timeline) {
-    return {
-      timeline: {
-        type: HomeViewModelType.NoTimeline,
-      },
-    };
-  }
-  if (timeline.messages.length === 0) {
-    return {
-      timeline: {
-        type: HomeViewModelType.EmptyTimeline,
-        info: "There is no message yet",
-      },
-    };
-  }
+    const now = getNow();
+    const timeline = selectTimeline("alice-timeline-id", state);
+    const isUserTimelineLoading = selectIsUserTimelineLoading("Alice", state)
 
-  const messages = selectMessages(timeline.messages, state).map((msg) => ({
-    id: msg.id,
-    userId: msg.author,
-    username: msg.author,
-    profilePictureUrl: `https://picsum.photos/200?random=${msg.author}`,
-    publishedAt: timeAgo(msg.publishedAt, "", { relativeDate: now }),
-    text: msg.text,
-  }));
+    if(isUserTimelineLoading){
+        return {
+            timeline: {
+                type: HomeViewModelType.LoadingTimeline,
+                info: "Loading..."
+            }
+        }
+    }
 
-  return {
-    timeline: {
-      type: HomeViewModelType.WithMessages,
-      messages,
-    },
-  };
+    if (!timeline) {
+        return {
+            timeline: {
+                type: HomeViewModelType.NoTimeline,
+            },
+        };
+    }
+
+    if (timeline.messages.length === 0) {
+        return {
+            timeline: {
+                type: HomeViewModelType.EmptyTimeline,
+                info: "There is no message yet",
+            },
+        };
+    }
+
+    const messages = selectMessages(timeline.messages, state).map((msg) => ({
+        id: msg.id,
+        userId: msg.author,
+        username: msg.author,
+        profilePictureUrl: `https://picsum.photos/200?random=${msg.author}`,
+        publishedAt: timeAgo(msg.publishedAt, "", {relativeDate: now}),
+        text: msg.text,
+    }));
+
+    return {
+        timeline: {
+            type: HomeViewModelType.WithMessages,
+            messages,
+        },
+    };
 };

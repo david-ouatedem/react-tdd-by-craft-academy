@@ -4,6 +4,7 @@ import {
 } from "../model/timeline.gateway";
 
 export class FakeTimelineGateway implements TimelineGateway {
+  constructor(private readonly delay = 0) {}
   timelineByUser = new Map<
     string,
     {
@@ -22,11 +23,16 @@ export class FakeTimelineGateway implements TimelineGateway {
   }: {
     userId: string;
   }): Promise<GetUserTimelineResponse> {
-    const timeline = this.timelineByUser.get(userId);
-    if (!timeline) return Promise.reject();
-    return Promise.resolve({
-      timeline,
-    });
+    return new Promise((resolve,reject)=> {
+      setTimeout(()=> {
+        const timeline = this.timelineByUser.get(userId);
+        if (!timeline) return reject();
+        return resolve({
+          timeline,
+        });
+      }, this.delay)
+    })
+
   }
 }
 

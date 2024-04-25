@@ -1,9 +1,9 @@
-import { PostList } from "@/components/PostList";
-import { TimelineDivider } from "@/components/TimelineDivider";
-import { RootState } from "@/lib/create-store";
-import { useSelector } from "react-redux";
-import { HomeViewModelType, selectHomeViewModel } from "./home.viewmodel";
-import { ReactNode } from "react";
+import {PostList} from "@/components/PostList";
+import {TimelineDivider} from "@/components/TimelineDivider";
+import {RootState} from "@/lib/create-store";
+import {useSelector} from "react-redux";
+import {HomeViewModelType, selectHomeViewModel} from "./home.viewmodel";
+import {ReactNode} from "react";
 import {exhaustiveGuard} from "@/lib/common/utils/exhaustive-guard.ts";
 import {Text} from "@chakra-ui/react";
 
@@ -19,6 +19,8 @@ export const Home = () => {
     switch (viewModel.timeline.type) {
       case HomeViewModelType.NoTimeline:
         return null;
+      case HomeViewModelType.LoadingTimeline:
+        return <Text>{viewModel.timeline.info}</Text>
       case HomeViewModelType.EmptyTimeline:
         return <Text>{viewModel.timeline.info}</Text>;
       case HomeViewModelType.WithMessages:
