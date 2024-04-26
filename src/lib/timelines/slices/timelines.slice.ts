@@ -14,7 +14,7 @@ export const timelinesSlice = createSlice({
   }) as TimelinesSliceState,
   reducers: {},
   extraReducers(builder) {
-    builder.addCase(getAuthUserTimeline.pending, (state, action) =>{
+    builder.addCase(getAuthUserTimeline.pending, (state) =>{
       state.loadingTimelineByUser["Alice"] = true
     })
     builder.addCase(getAuthUserTimeline.fulfilled, (state, action) => {
