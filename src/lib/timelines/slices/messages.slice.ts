@@ -15,7 +15,7 @@ export const messagesSlices = createSlice({
 });
 
 export const selectMessage = (id: string, state: RootState) =>
-  messagesAdapter.getSelectors().selectById(state.messages, id);
+  messagesAdapter.getSelectors().selectById(state.timelines.messages, id);
 
 export const selectMessages = (ids: string[], state: RootState) =>
   ids.map((id) => selectMessage(id, state));

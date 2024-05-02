@@ -1,7 +1,11 @@
 import {RootState} from "@/lib/create-store";
 import {selectMessages} from "@/lib/timelines/slices/messages.slice";
-import {selectIsUserTimelineLoading, selectTimeline} from "@/lib/timelines/slices/timelines.slice";
+import {
+    selectIsUserTimelineLoading,
+    selectTimelineForUser
+} from "@/lib/timelines/slices/timelines.slice";
 import {format as timeAgo} from "timeago.js";
+import {selectAuthUser} from "@/lib/auth/reducer.ts";
 
 export enum HomeViewModelType {
     NoTimeline = "NO_TIMELINE",
@@ -38,8 +42,9 @@ export const selectHomeViewModel = (
     };
 } => {
     const now = getNow();
-    const timeline = selectTimeline("alice-timeline-id", state);
-    const isUserTimelineLoading = selectIsUserTimelineLoading("Alice", state)
+    const authUser = selectAuthUser(state)
+    const timeline = selectTimelineForUser(authUser, state)
+    const isUserTimelineLoading = selectIsUserTimelineLoading(authUser, state)
 
     if(isUserTimelineLoading){
         return {

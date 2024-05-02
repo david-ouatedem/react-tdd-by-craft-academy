@@ -6,23 +6,27 @@ import {Message, messagesAdapter} from "@/lib/timelines/model/message.entity.ts"
 
 const initialState = rootReducer(undefined, createAction("")())
 
+const withAuthUser = createAction<{authUser: string}>("withAuthUser")
 const withTimeline = createAction<Timeline>("withTimeline")
 const withLoadingTimelineOf = createAction<{ user: string }>("withLoadingTimelineOf")
 const withNotLoadingTimelineOf = createAction<{ user: string }>("withNotLoadingTimelineOf")
 const withMessages = createAction<Message[]>("withMessages")
 
 const reducer = createReducer(initialState, (builder) => {
-    builder.addCase(withTimeline, (state, action) => {
-        timelinesAdapter.addOne(state.timelines, action.payload)
+    builder.addCase(withAuthUser, (state, action) => {
+        state.auth.authUser = action.payload.authUser
     })
-    builder.addCase(withLoadingTimelineOf, (state, action) => {
-        state.timelines.loadingTimelineByUser[action.payload.user] = true
+    .addCase(withTimeline, (state, action) => {
+        timelinesAdapter.addOne(state.timelines.timelines, action.payload)
     })
-    builder.addCase(withNotLoadingTimelineOf, (state, action) => {
-        state.timelines.loadingTimelineByUser[action.payload.user] = false
+    .addCase(withLoadingTimelineOf, (state, action) => {
+        state.timelines.timelines.loadingTimelineByUser[action.payload.user] = true
     })
-    builder.addCase(withMessages, (state, action) => {
-        messagesAdapter.addMany(state.messages, action.payload)
+    .addCase(withNotLoadingTimelineOf, (state, action) => {
+        state.timelines.timelines.loadingTimelineByUser[action.payload.user] = false
+    })
+    .addCase(withMessages, (state, action) => {
+        messagesAdapter.addMany(state.timelines.messages, action.payload)
     })
 })
 export const stateBuilder = (baseState = initialState) => {
@@ -31,6 +35,7 @@ export const stateBuilder = (baseState = initialState) => {
         (payload: P) => stateBuilder(reducer(baseState, actionCreator(payload)))
 
     return {
+        withAuthUser: reduce(withAuthUser),
         withTimeline: reduce(withTimeline),
         withLoadingTimelineOf: reduce(withLoadingTimelineOf),
         withMessages: reduce(withMessages),

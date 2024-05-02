@@ -1,4 +1,4 @@
-import { createStore } from "@/lib/create-store";
+import {AppStore, createStore} from "@/lib/create-store";
 import { describe, expect, test } from "vitest";
 import { getAuthUserTimeline } from "../usecases/get-auth-user-timeline.usecase";
 import { FakeTimelineGateway } from "../infra/fake-timeline.gateway";
@@ -56,14 +56,11 @@ describe("feature: retrieving authenticated user's timeline", () => {
 
 const timelineGateway = new FakeTimelineGateway();
 const authGateway = new FakeAuthGateway();
-
-const store = createStore({
-  authGateway,
-  timelineGateway,
-});
+let testStateBuilder = stateBuilder()
+let store: AppStore;
 
 function givenAuthenticatedUserIs(user: string) {
-  authGateway.authUser = user;
+  testStateBuilder = testStateBuilder.withAuthUser({authUser: user})
 }
 
 function givenExistingTimeline(timeline: {
@@ -76,10 +73,14 @@ function givenExistingTimeline(timeline: {
     publishedAt: string;
   }[];
 }) {
-  timelineGateway.timelineByUser.set("Alice", timeline);
+  timelineGateway.timelineByUser.set(timeline.user, timeline);
 }
 
 async function whenRetrievingAuthenticatedUserTimeline() {
+  store = createStore({
+    authGateway,
+    timelineGateway
+  }, testStateBuilder.build())
   await store.dispatch(getAuthUserTimeline());
 }
 
@@ -98,7 +99,9 @@ function thenTheReceivedTimeLineShouldBe(expectedTimeline: {
     publishedAt: string;
   }[];
 }) {
-  const expectedState = stateBuilder().withTimeline({
+  const expectedState = stateBuilder()
+      .withAuthUser({authUser: expectedTimeline.user})
+      .withTimeline({
     id: expectedTimeline.id,
     user: expectedTimeline.user,
     messages: expectedTimeline.messages.map(m=>m.id)
